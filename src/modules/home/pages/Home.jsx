@@ -1,6 +1,6 @@
 import Card from '../../shared/components/Card';
 import { useEffect, useState } from 'react';
-import { getDashboardSummary } from '../service/dasboardSummary';
+import { getDashboardSummary } from '../service/dashboardSummary';
 
 function Home() {
   const [stats, setStats] = useState({ products: 0, orders: 0 });
