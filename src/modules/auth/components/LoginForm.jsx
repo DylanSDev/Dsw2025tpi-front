@@ -12,7 +12,7 @@ function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ defaultValues: { username: '', password: '' } });
+  } = useForm({ defaultValues: { email: '', password: '' } });
 
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ function LoginForm() {
 
   const onValid = async (formData) => {
     try {
-      const { error } = await singin(formData.username, formData.password);
+      const { error } = await singin(formData.email, formData.password);
 
       if (error) {
         setErrorMessage(error.frontendErrorMessage);
@@ -53,11 +53,11 @@ function LoginForm() {
     onSubmit={handleSubmit(onValid)}
     >
       <Input
-        label='Usuario'
-        { ...register('username', {
-          required: 'Usuario es obligatorio',
+        label='Email'
+        { ...register('email', {
+          required: 'Email es obligatorio',
         }) }
-        error={errors.username?.message}
+        error={errors.email?.message}
       />
       <Input
         label='Contraseña'
