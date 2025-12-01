@@ -15,8 +15,8 @@ function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
-  const singin = async (username, password) => {
-    const { data, error } = await login(username, password);
+  const singin = async (email, password) => {
+    const { data, error } = await login(email, password);
 
     if (error) {
       return { error };
