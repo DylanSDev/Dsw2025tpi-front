@@ -7,6 +7,7 @@ import useAuth from '../../auth/hook/useAuth';
 import { useCart } from '../context/CartProvider';
 import CartItem from '../components/CartItem';
 import ModalLoginForm from '../../auth/components/ModalLoginForm';
+import { createOrder } from '../../orders/services/create';
 
 function CartPage() {
   const navigate = useNavigate();
@@ -17,48 +18,77 @@ function CartPage() {
 
   const [checkoutAttempted, setCheckoutAttempted] = useState(false);
 
-  const finalizeOrder = () => 
+  const finalizeOrder = async () => 
   {
+    const userStored = localStorage.getItem('user');
+    const user = userStored ? JSON.parse(userStored) : null;
 
+    if (!user || !user.id)
+    {
+      alert('Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.');
+      setIsSubmitting(false);
+      return;
+    }
 
+    const cartItems = cart.map(item => 
+    ({
+        productId: item.id, 
+        quantity: item.quantity
+    })                         );
 
-    alert('¡Compra finalizada con éxito! Orden enviada.');
-    
-    clearCart(); 
-    
-    navigate('/');
+    const orderData = {
+        customerId: user.id,
+        shippingAddress: "Calle Falsa 123, Tucumán",
+        billingAddress: "Calle Falsa 123, Tucumán",
+        notes: "Pedido generado desde la web",
+        orderItems: cartItems
+    };
+
+    console.log('Enviando orden:', orderData);
+
+    const result = await createOrder(orderData);
+
+    if (result.error) 
+    {
+      alert(`Error al crear la orden: ${result.error.message || result.error.detail || 'Error desconocido'}`);
+      console.error(result.error);
+    }
+    else
+    {
+      alert('¡Compra finalizada con éxito! Orden enviada.');
+      clearCart();
+      navigate('/');
+    }
   };
 
-  const handleSuccessfulLogin = () => {
-    setIsModalOpen(false); // Cierra el modal
+  const handleSuccessfullLogin = () => 
+  {
+    setIsModalOpen(false);
     
-    // La consigna dice que debe enviar la orden automáticamente tras el login
     if (checkoutAttempted) {
       finalizeOrder();
-      setCheckoutAttempted(false); // Resetear
+      setCheckoutAttempted(false);
     }
   };
 
 
-  const handleCheckout = () => {
-    if (cart.length === 0) {
+  const handleCheckout = () => 
+  {
+    if (cart.length == 0) {
       alert('Tu carrito está vacío. Agrega productos para continuar.');
       return;
     }
 
     setCheckoutAttempted(true);
 
-    if (isAuthenticated) {
-
-        finalizeOrder();
-      // Flujo 1: Usuario ya logeado (PENDIENTE: enviar a /api/orders)
+    if (isAuthenticated)
+    {
       console.log('Usuario autenticado. Procediendo con la orden...');
-      alert('¡Compra simulada exitosa! Reemplazar por llamada real a /api/orders.');
-      // En una implementación real, aquí limpiarías el carrito y redirigirías
-      // clearCart(); 
-    } else {
-        setIsModalOpen(true);
-      // Flujo 2: Usuario no logeado (PENDIENTE: debe abrir una modal de login)
+      finalizeOrder();
+    }
+    else 
+    {
+      setIsModalOpen(true);
       alert('Debes iniciar sesión para finalizar la compra. Implementar Modal de Login/Registro.');
       // Después de iniciar sesión/registro, el flujo enviaría la orden automáticamente.
     }
@@ -125,7 +155,7 @@ function CartPage() {
         onClose={() => setIsModalOpen(false)}
       >
         <ModalLoginForm 
-          onLoginSuccess={handleSuccessfulLogin}
+          onLoginSuccess={handleSuccessfullLogin}
           onRegisterClick={handleRegisterClick}
         />
       </Modal>
