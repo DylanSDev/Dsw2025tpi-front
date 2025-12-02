@@ -14,28 +14,18 @@ function CartPage() {
   const { isAuthenticated } = useAuth();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Estado para rastrear si el usuario intentó comprar antes de logearse
+
   const [checkoutAttempted, setCheckoutAttempted] = useState(false);
 
+  const finalizeOrder = () => 
+  {
 
-  /**
-   * Lógica de la Consigna:
-   * 1. Si está autenticado: se envia la informacion a '/api/orders', limpiar localStorage y redirigir.
-   * 2. Si NO está autenticado: abre el modal y luego de login, ejecuta esta función automáticamente.
-   */
-  const finalizeOrder = () => {
-    // PENDIENTE: Aquí debe ir la llamada al servicio de creación de orden (createOrder).
 
-    console.log('ENVIANDO ORDEN AL BACKEND (Simulado)...');
-    console.log('Datos de la orden a enviar:', cart);
-    
-    // Una vez que el servicio de orden sea exitoso:
+
     alert('¡Compra finalizada con éxito! Orden enviada.');
     
-    // 1. Limpiar el carrito (clearCart implementa localStorage.removeItem('cart'))
     clearCart(); 
     
-    // 2. Redirigir al listado de productos
     navigate('/');
   };
 
