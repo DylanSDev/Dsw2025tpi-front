@@ -20,7 +20,7 @@ function LoginForm() {
 
   const onValid = async (formData) => {
     try {
-      const { error } = await singin(formData.email, formData.password);
+      const { error, user } = await singin(formData.email, formData.password);
 
       if (error) {
         setErrorMessage(error.frontendErrorMessage);
@@ -28,7 +28,14 @@ function LoginForm() {
         return;
       }
 
-      navigate('/admin/home');
+      if(user.role == 'admin')
+      {
+        navigate('/admin/home');
+      }
+      else
+      {
+        navigate('/');
+      }
     } catch (error) {
       if (error?.response?.data?.code) {
         setErrorMessage(frontendErrorMessage[error?.response?.data?.code]);
