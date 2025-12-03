@@ -20,7 +20,7 @@ function LoginForm() {
 
   const onValid = async (formData) => {
     try {
-      const { error } = await singin(formData.email, formData.password);
+      const { error, user } = await singin(formData.email, formData.password);
 
       if (error) {
         setErrorMessage(error.frontendErrorMessage);
@@ -28,7 +28,14 @@ function LoginForm() {
         return;
       }
 
-      navigate('/admin/home');
+      if(user.role == 'admin')
+      {
+        navigate('/admin/home');
+      }
+      else
+      {
+        navigate('/');
+      }
     } catch (error) {
       if (error?.response?.data?.code) {
         setErrorMessage(frontendErrorMessage[error?.response?.data?.code]);
@@ -69,7 +76,7 @@ function LoginForm() {
       />
 
       <Button type='submit'>Iniciar Sesión</Button>
-      <Button variant='secondary' onClick={() => alert('Debe impletar navegacion y pagina de registro')}>Registrar Usuario</Button>
+      <Button variant='secondary' onClick={() => navigate('/signup')}>Registrar Usuario</Button>
       {errorMessage && <p className='text-red-500'>{errorMessage}</p>}
     </form>
   );

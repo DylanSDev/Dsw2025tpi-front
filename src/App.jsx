@@ -7,26 +7,38 @@ import ListOrdersPage from './modules/orders/pages/ListOrdersPage';
 import Home from './modules/home/pages/Home';
 import ListProductsPage from './modules/products/pages/ListProductsPage';
 import CreateProductPage from './modules/products/pages/CreateProductPage';
+import ClientProductsPage from './modules/products/pages/ClientProductsPage';
+import { CartProvider } from './modules/products/context/CartProvider'; 
+import CartPage from './modules/products/pages/CartPage';
+import SignupPage from './modules/auth/pages/SignupPage';
 
 function App() {
   const router = createBrowserRouter([
     {
       path: '/',
-      element: <><Outlet /></>,
+      element: (
+        <CartProvider>
+        <Outlet />
+        </CartProvider>
+        ),
       children: [
         {
           path: '/',
-          element: <>Listado de productos</>,
+          element: <ClientProductsPage/>,
         },
         {
           path: '/cart',
-          element: <>Carrito de compras</>,
+          element: <CartPage/>,
         },
       ],
     },
     {
       path: '/login',
       element: <LoginPage />,
+    },
+    {
+      path: '/signup', 
+      element: <SignupPage />,
     },
     {
       path: '/admin',
