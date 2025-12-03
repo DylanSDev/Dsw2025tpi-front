@@ -17,27 +17,23 @@ function ListProductsPage() {
   const [ status, setStatus ] = useState(productStatus.ALL);
   const [ pageNumber, setPageNumber ] = useState(1);
   const [ pageSize, setPageSize ] = useState(10);
-
   const [ total, setTotal ] = useState(0);
   const [ products, setProducts ] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await getProducts(searchTerm, status, pageNumber, pageSize);
+ const fetchProducts = async () => {
+  try {
+    setLoading(true);
+    const { data, error } = await getProducts(searchTerm, status, pageNumber, pageSize);
+    if (error) throw error;
 
-      if (error) throw error;
-
-      setTotal(data.total);
-      setProducts(data.productItems);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setProducts(data?.productsItems ?? []);
+    setTotal(data?.total ?? 0);
+  } catch (error) {
+    console.error(error);
+  }finally {
+    setLoading(false);
+  }};
 
   useEffect(() => {
     fetchProducts();
