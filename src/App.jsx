@@ -11,6 +11,7 @@ import ClientProductsPage from './modules/products/pages/ClientProductsPage';
 import { CartProvider } from './modules/products/context/CartProvider'; 
 import CartPage from './modules/products/pages/CartPage';
 import SignupPage from './modules/auth/pages/SignupPage';
+import EditProductPage from './modules/products/pages/EditProductPage';
 
 function App() {
   const router = createBrowserRouter([
@@ -59,6 +60,11 @@ function App() {
         {
           path: '/admin/products/create',
           element: <CreateProductPage />,
+        },
+        {
+          path: '/admin/products/:id',
+          element: <EditProductPage />,
+
         },
         {
           path: '/admin/orders',

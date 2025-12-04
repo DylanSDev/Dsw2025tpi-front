@@ -54,7 +54,7 @@ function Dashboard() {
           sm:col-span-2
         "
       >
-        <span>Mi Dashboard</span>
+        <span>TPI - DSW: E-commerce</span>
         {renderLogoutButton()}
         <button
           className="
