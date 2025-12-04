@@ -14,7 +14,7 @@ export const listOrders = async (status = null, pageNumber = 1, pageSize = 10) =
       filter.status = status;
     }
 
-    const response = await instance.get('/api/orders', { filter });
+    const response = await instance.get('/api/orders', { params: filter });
 
     return { data: response.data, error: null };
   }

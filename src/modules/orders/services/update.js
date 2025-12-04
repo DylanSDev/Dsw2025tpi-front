@@ -1,3 +1,5 @@
+import { instance } from '../../shared/api/axiosInstance';
+
 export const updateOrderStatus = async (id, newStatus) =>
 {
   try
