@@ -7,11 +7,11 @@ import { updateOrderStatus } from '../services/update';
 function ListOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [pageNumber, setPageNumber] = useState(1);
-  // 1. Agregamos setPageSize para que el dropdown funcione
   const [pageSize, setPageSize] = useState(10); 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -30,7 +30,7 @@ function ListOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter, pageNumber, pageSize]); // Agregamos pageSize a las dependencias
+  }, [statusFilter, pageNumber, pageSize]);
 
   const handleStatusChange = async (id, newStatus) => {
      const { error } = await updateOrderStatus(id, newStatus);
@@ -43,76 +43,76 @@ function ListOrdersPage() {
      }
   };
 
-  const toggleDetails = (id) => {
+  const toggleDetails = (id) =>
+  {
     setExpandedOrderId(expandedOrderId === id ? null : id);
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      
-      {/* --- BARRA DE CONTROL --- */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Gestión de Órdenes</h1>
+    <div>
+      <Card className="mb-4">
+        <div className='flex flex-col md:flex-row justify-between items-center gap-4 mb-2'>
+          <h1 className='text-3xl font-bold text-gray-800'>Gestión de Órdenes</h1>
+          
+          <div className='flex flex-col sm:flex-row gap-4 w-full md:w-auto'>
+            <div className='flex items-center gap-3 w-full'>
+              <input 
+                type="text" 
+                placeholder='Buscar' 
+                className='text-[1.3rem] w-full border border-gray-200 rounded-md p-1.5 hover:shadow outline-none' 
+              />
+              <Button className='h-11 w-11 flex justify-center items-center'>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
+                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                  <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+                  <g id="SVGRepo_iconCarrier"> 
+                    <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path> 
+                  </g>
+                </svg>
+              </Button>
+            </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden bg-white w-full sm:w-64 focus-within:ring-2 focus-within:ring-purple-200 transition">
-            <input 
-              type="text" 
-              placeholder="Buscar" 
-              className="px-3 py-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
-            />
-            <button className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-600 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+            <select 
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPageNumber(1);
+              }}
+              className='text-[1.3rem] border border-gray-200 rounded-md p-1.5 hover:shadow outline-none min-w-[150px]'
+            >
+              <option value="ALL">Todos</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
           </div>
-
-          <select 
-            className="border border-gray-300 rounded-lg p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-200 text-gray-700 cursor-pointer min-w-[160px]"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPageNumber(1);
-            }}
-          >
-            <option value="ALL">Todos</option>
-            <option value="Pending">Pendiente</option>
-            <option value="Processing">Procesando</option>
-            <option value="Shipped">Enviado</option>
-            <option value="Delivered">Entregado</option>
-            <option value="Cancelled">Cancelado</option>
-          </select>
         </div>
-      </div>
+      </Card>
 
-      {/* --- LISTA DE ÓRDENES --- */}
-      <div className="flex flex-col gap-3 min-h-[200px]">
+      <div className='flex flex-col gap-4'>
         {loading ? (
-          <div className="text-center py-10 text-gray-500">Cargando...</div>
+          <span className="text-gray-500 ml-2">Buscando datos...</span>
         ) : orders.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 bg-white rounded-xl border border-gray-200">No se encontraron órdenes.</div>
+          <Card>No se encontraron órdenes.</Card>
         ) : (
           orders.map((order) => (
-            <Card key={order.id} className="transition-all hover:shadow-md border border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
+            <Card key={order.id} className="transition-all hover:shadow-md">
+              <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center'>
+                
+                <div className="mb-2 sm:mb-0">
+                  <h1 className='text-xl font-bold text-gray-800'>
                     #{order.id.substring(0, 8)}... - Cliente: <span className="font-normal text-gray-600">{order.customerId}</span>
-                  </h3>
-                  <div className="mt-1">
-                    <span className={`text-sm font-medium ${
-                      order.status === 'Cancelled' ? 'text-red-500' : 
-                      order.status === 'Delivered' ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
+                  </h1>
+                  <p className='text-base text-gray-500 mt-1'>
+                    {order.status}
+                  </p>
                 </div>
 
                 <Button 
                   onClick={() => toggleDetails(order.id)}
-                  className="bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold px-6 py-2 rounded-lg transition-colors self-end sm:self-center"
+                  className="bg-purple-200 text-black hover:bg-purple-300 px-6"
                 >
                   {expandedOrderId === order.id ? 'Ocultar' : 'Ver'}
                 </Button>
@@ -150,11 +150,11 @@ function ListOrdersPage() {
                       value={order.status}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                     >
-                      <option value="Pending">Pendiente</option>
-                      <option value="Processing">Procesando</option>
-                      <option value="Shipped">Enviado</option>
-                      <option value="Delivered">Entregado</option>
-                      <option value="Cancelled">Cancelado</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
                 </div>
@@ -164,40 +164,32 @@ function ListOrdersPage() {
         )}
       </div>
 
-      {/* --- PAGINACIÓN --- */}
-      <div className="flex justify-center items-center mt-3">
-        {/* Botón Atras */}
+      <div className='flex justify-center items-center mt-6 mb-4'>
         <button
           disabled={pageNumber === 1}
           onClick={() => setPageNumber(pageNumber - 1)}
-          className='bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-md px-3 py-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm'
+          className='bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md px-3 py-1.5 disabled:bg-gray-100 disabled:text-gray-400 transition'
         >
           Atras
         </button>
-
-        {/* Indicador de Página */}
-        <span className='mx-4 text-gray-700 font-medium'>
-          {pageNumber} 
-          {/* Si tu backend devolviera el total, aquí iría " / {totalPages}" */}
-        </span>
-
-        {/* Botón Siguiente */}
+        
+        <span className='mx-4 text-lg'>{pageNumber}</span>
+        
         <button
           disabled={orders.length < pageSize}
           onClick={() => setPageNumber(pageNumber + 1)}
-          className='bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-md px-3 py-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm'
+          className='bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md px-3 py-1.5 disabled:bg-gray-100 disabled:text-gray-400 transition'
         >
           Siguiente
         </button>
 
-        {/* Selector de Tamaño de Página */}
         <select
           value={pageSize}
           onChange={evt => {
             setPageNumber(1);
             setPageSize(Number(evt.target.value));
           }}
-          className='ml-4 border border-gray-200 rounded-md p-1.5 bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 cursor-pointer'
+          className='ml-3 border border-gray-200 rounded p-1'
         >
           <option value="5">5</option>
           <option value="10">10</option>

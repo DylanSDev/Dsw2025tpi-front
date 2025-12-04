@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../shared/components/Button';
-import Input from '../../shared/components/Input';
+// import Input from '../../shared/components/Input';
 import { getClientProducts } from '../services/list'; 
 import { useCart } from '../context/CartProvider';
+import useAuth from '../../auth/hook/useAuth'; // 1. Importar useAuth
 
 function ProductCard({ product, addToCart }) 
 {
@@ -80,6 +81,10 @@ function ProductCard({ product, addToCart })
 function ClientProductsPage() {
   const navigate = useNavigate();
   const { addToCart, totalItems } = useCart();
+  
+  // 2. Extraemos isAuthenticated y singout
+  const { isAuthenticated, singout } = useAuth(); 
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
@@ -115,6 +120,12 @@ function ClientProductsPage() {
     setSearchTerm(tempSearchTerm);
   };
 
+  // 3. Modificamos el logout: Solo limpia la sesión, no redirige.
+  const handleLogout = () => {
+    singout(); 
+    // Eliminamos la línea navigate('/login');
+  };
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -126,7 +137,6 @@ function ClientProductsPage() {
           <div className='flex items-center gap-4'>
             {/* Logo o Título */}
             <div className='flex items-center gap-2'>
-               {/* Simulación del logo negro de tu imagen */}
                <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-bold">B</div>
             </div>
             
@@ -155,14 +165,33 @@ function ClientProductsPage() {
             </button>
           </form>
 
-          {/* Botones Auth */}
+          {/* 4. Botones Auth Condicionales */}
           <div className='flex gap-3'>
-            <Button variant='secondary' onClick={() => navigate('/login')} className='bg-purple-100 text-purple-700 hover:bg-purple-200 text-sm py-2'>
-              Iniciar Sesión
-            </Button>
-            <Button onClick={() => navigate('/signup')} className='bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm py-2 shadow-none'>
-              Registrarse
-            </Button>
+            {isAuthenticated ? (
+              <Button 
+                variant='secondary' 
+                onClick={handleLogout} 
+                className='bg-red-100 text-red-700 hover:bg-red-200 text-sm py-2'
+              >
+                Cerrar Sesión
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  variant='secondary' 
+                  onClick={() => navigate('/login')} 
+                  className='bg-purple-100 text-purple-700 hover:bg-purple-200 text-sm py-2'
+                >
+                  Iniciar Sesión
+                </Button>
+                <Button 
+                  onClick={() => navigate('/signup')} 
+                  className='bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm py-2 shadow-none'
+                >
+                  Registrarse
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
