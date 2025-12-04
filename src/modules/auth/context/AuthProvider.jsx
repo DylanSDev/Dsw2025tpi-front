@@ -1,20 +1,22 @@
-import { createContext, useState } from 'react';
-import { login } from '../services/login';
+import { createContext, useState } from "react";
+import { login } from "../services/login";
 
 const AuthContext = createContext();
 
-function AuthProvider({ children })
-{
-  const [isAuthenticated, setIsAuthenticated] = useState(() => 
-  {
-    const token = localStorage.getItem('token');
+function AuthProvider({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
 
-    return Boolean(token);
+    if (user.role === "admin" && token) {
+      return true;
+    } else {
+      return false;
+    }
   });
 
-  const [user, setUser] = useState(() => 
-  {
-    const storedUser = localStorage.getItem('user');
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
 
     return storedUser ? JSON.parse(storedUser) : null;
   });
@@ -24,40 +26,35 @@ function AuthProvider({ children })
     setIsAuthenticated(false);
   };
 
-  const singin = async (email, password) => 
-  {
+  const singin = async (email, password) => {
     const { data, error } = await login(email, password);
 
-    if (error) 
-    {
+    if (error) {
       return { error };
     }
 
     const { token, user: userData } = data;
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
     setIsAuthenticated(true);
     setUser(userData);
 
-    return {error: null, user: userData};
+    return { error: null, user: userData };
   };
 
   return (
     <AuthContext.Provider
-      value={ {
+      value={{
         isAuthenticated,
         user,
         singin,
         singout,
-      } }
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export {
-  AuthProvider,
-  AuthContext,
-};
+export { AuthProvider, AuthContext };
