@@ -6,13 +6,18 @@ const AuthContext = createContext();
 function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const userString = localStorage.getItem("user");
 
-    if (user.role === "admin" && token) {
-      return true;
-    } else {
-      return false;
+    if (token && userString) {
+      try {
+        const user = JSON.parse(userString);
+        return user.role === "admin";
+      } catch (e) {
+        return false;
+      }
     }
+
+    return false;
   });
 
   const [user, setUser] = useState(() => {
