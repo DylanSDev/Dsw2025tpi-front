@@ -1,30 +1,46 @@
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form'; // ⬅️ Nuevo: Importar useForm
 import Button from '../../shared/components/Button';
 import Input from '../../shared/components/Input';
 import { createProduct } from '../services/create';
-import { updateProduct } from '../services/detail';
+import { updateProduct } from '../services/detail'; 
 
 // Aceptamos la nueva prop isFormDisabled
 function ProductForm({ initialData = null, productId = null, onSubmissionSuccess, isFormDisabled = false }) {
     
     const isEdit = !!productId;
 
-    const [formData, setFormData] = useState({
-        sku: '',
-        internalCode: '',
-        name: '',
-        description: '',
-        currentUnitPrice: 0,
-        stockQuantity: 0,
+    // 1. Inicialización de useForm (Reemplaza a useState(formData))
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid }, // errors para mensajes, isValid para deshabilitar botón
+        reset,
+        getValues, // Necesario para cargar data inicial en edición
+    } = useForm({
+        defaultValues: {
+            sku: initialData?.sku || '',
+            internalCode: initialData?.internalCode || '',
+            name: initialData?.name || '',
+            description: initialData?.description || '',
+            // Se asegura que los valores numéricos sean 0 si son nulos para evitar NaN
+            currentUnitPrice: initialData?.currentUnitPrice ?? 0, 
+            stockQuantity: initialData?.stockQuantity ?? 0,
+        },
+        mode: 'onBlur', // ⬅️ Activa la validación en tiempo real al salir del campo (onBlur)
     });
+    
+    // Eliminada: const [formData, setFormData] = useState({...});
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
-    // Cargar datos iniciales
+    // 2. Cargar datos iniciales usando reset
     useEffect(() => {
         if (initialData) {
-            setFormData({
+            // Usa reset para inyectar los datos en RHF, lo que sobrescribe los valores iniciales.
+            reset({
                 sku: initialData.sku || '',
                 internalCode: initialData.internalCode || '',
                 name: initialData.name || '',
@@ -33,38 +49,35 @@ function ProductForm({ initialData = null, productId = null, onSubmissionSuccess
                 stockQuantity: initialData.stockQuantity || 0,
             });
         }
-    }, [initialData]);
+    }, [initialData, reset]);
 
-    const handleChange = (evt) => {
-        const { name, value, type } = evt.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'number' ? Number(value) : value,
-        }));
+    // Eliminada: const handleChange = (evt) => { ... }; // Reemplazada por ...register
+
+    // 3. Función onValid que maneja la lógica de envío (solo se llama si la validación pasa)
+    // El argumento 'data' contiene los campos y valores del formulario (ya validados).
+    const onValid = async (data) => {
+
+        if (isEdit) {
+        data.sku = getValues('sku');
+        data.internalCode = getValues('internalCode');
+    }
+        // Eliminada: La validación manual de descripción, ahora cubierta por 'required' en register.
+        // if (!formData.description || formData.description.trim() === '') { ... }
+
+        setLoading(true);
         setError(null);
         setSuccessMessage(null);
-    };
-
-    const handleSubmit = async (evt) => {
-        evt.preventDefault();
-        // Prevenir el guardado si el formulario está deshabilitado
-        if (isFormDisabled) return; 
-
-        if (!formData.description || formData.description.trim() === '') {
-            setError('La descripción es obligatoria.');
-            return;
-        }
-        
-        setLoading(true);
 
         try {
             let response;
             if (isEdit) {
                 // Lógica de Edición (PUT)
-                response = await updateProduct(productId, formData); 
+                // Usar 'data' que contiene los valores del formulario
+                // Nota: Asegúrate que 'updateProduct' reciba el ID y los datos.
+                response = await updateProduct(productId, data); 
             } else {
                 // Lógica de Creación (POST)
-                response = await createProduct(formData);
+                response = await createProduct(data);
             }
 
             if (response.error) {
@@ -78,14 +91,8 @@ function ProductForm({ initialData = null, productId = null, onSubmissionSuccess
             }
 
             if (!isEdit) {
-                setFormData({
-                    sku: '',
-                    internalCode: '',
-                    name: '',
-                    description: '',
-                    currentUnitPrice: 0,
-                    stockQuantity: 0,
-                });
+                // Resetear form a valores por defecto/vacíos después de la creación
+                reset();
             }
 
         } catch (err) {
@@ -95,8 +102,9 @@ function ProductForm({ initialData = null, productId = null, onSubmissionSuccess
         }
     };
 
+    // 4. Se usa handleSubmit de RHF para envolver la función onValid
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onValid)}>
             {successMessage && <p className='text-green-600 mb-4'>{successMessage}</p>}
             {error && <p className='text-red-600 mb-4'>{error}</p>}
             
@@ -107,10 +115,6 @@ function ProductForm({ initialData = null, productId = null, onSubmissionSuccess
                 </div>
             )}
 
-            {/*
-              Utilizamos <fieldset disabled={isFormDisabled}> para deshabilitar 
-              todos los campos editables de una sola vez si el producto no está activo.
-            */}
             <fieldset disabled={isFormDisabled} className='flex flex-col gap-4'> 
                 
                 {/* ID (Código Único) - Campo inmodificable y solo visible en edición */}
@@ -118,83 +122,103 @@ function ProductForm({ initialData = null, productId = null, onSubmissionSuccess
                     <Input
                         label="Codigo Único (ID)"
                         name="id"
-                        value={productId} 
+                        value={productId || initialData?.id} 
                         disabled // Siempre deshabilitado
                         placeholder="ID (Inmodificable)"
                         className='opacity-75'
                     />
                 )}
+                
+                {/* Código Interno (InternalCode) - Requerido, Inmodificable en edición */}
                 <Input
                     label="Código Interno (InternalCode)"
-                    name="internalCode"
-                    value={formData.internalCode}
-                    onChange={handleChange}
-                    disabled={isEdit} // Inmodificable en edición
+                    {...register('internalCode', {
+                        required: 'El Código Interno es obligatorio',
+                        disabled: isEdit, // Inmodificable en edición
+                    })}
+                    // ⬅️ Mostrar error de validación en tiempo real
+                    error={errors.internalCode?.message} 
                     placeholder="Código Único"
-                    required
                 />
 
-                {/* SKU - Inmodificable en edición */}
+                {/* SKU - Requerido, Inmodificable en edición */}
                 <Input
                     label="SKU"
-                    name="sku"
-                    value={formData.sku}
-                    onChange={handleChange}
-                    disabled={isEdit} // Mantiene la restricción original
+                    {...register('sku', {
+                        required: 'SKU es obligatorio',
+                        disabled: isEdit, // Mantiene la restricción original
+                    })}
+                    // ⬅️ Mostrar error de validación en tiempo real
+                    error={errors.sku?.message} 
                     placeholder="Código de Producto"
-                    required
                 />
                 
+                {/* Nombre - Requerido */}
                 <Input
                     label="Nombre"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    {...register('name', {
+                        required: 'El nombre es obligatorio',
+                    })}
+                    // ⬅️ Mostrar error de validación en tiempo real
+                    error={errors.name?.message} 
                     placeholder="Nombre del Producto"
-                    required
                 />
                 
+                {/* Descripción - Requerida */}
                 <label className='flex flex-col gap-2'>
                     Descripción
                     <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
+                        {...register('description', {
+                            required: 'La descripción es obligatoria',
+                        })}
                         placeholder="Descripción detallada del producto"
-                        className='p-2 border rounded-md text-[1.3rem]'
+                        // Ajustar la clase para mostrar el error visualmente en el textarea
+                        className={`p-2 border rounded-md text-[1.3rem] ${errors.description ? 'border-red-400' : 'border-gray-200'}`}
                         rows="4"
-                        required
                     />
+                    {/* ⬅️ Mostrar error de validación en tiempo real */}
+                    {errors.description && <p className="text-red-500 text-base sm:text-xs">{errors.description.message}</p>}
                 </label>
 
+                {/* Precio Unitario - Requerido y > 0 */}
                 <Input
                     label="Precio Unitario"
-                    name="currentUnitPrice"
                     type="number"
-                    value={formData.currentUnitPrice}
-                    onChange={handleChange}
+                    step="0.01" // Añadir step para decimales
+                    {...register('currentUnitPrice', {
+                        required: 'El precio unitario es obligatorio',
+                        valueAsNumber: true, // Convierte el input a número
+                        // Validación: El precio debe ser mayor a 0
+                        validate: (value) => (value > 0) || 'El precio debe ser mayor a 0', 
+                    })}
+                    // ⬅️ Mostrar error de validación en tiempo real
+                    error={errors.currentUnitPrice?.message} 
                     placeholder="0.00"
-                    min="0"
-                    required
                 />
                 
+                {/* Stock - Requerido y >= 0 */}
                 <Input
                     label="Stock"
-                    name="stockQuantity"
                     type="number"
-                    value={formData.stockQuantity}
-                    onChange={handleChange}
+                    {...register('stockQuantity', {
+                        required: 'El Stock es obligatorio',
+                        valueAsNumber: true, // Convierte el input a número
+                        min: {
+                            value: 0,
+                            message: 'El stock no puede ser negativo',
+                        },
+                    })}
+                    // ⬅️ Mostrar error de validación en tiempo real
+                    error={errors.stockQuantity?.message} 
                     placeholder="0"
-                    min="0"
-                    required
                 />
             </fieldset>
 
             <div className='mt-6'>
                 <Button 
                     type="submit" 
-                    // Deshabilitar si está cargando O si el formulario está deshabilitado
-                    disabled={loading || isFormDisabled} 
+                    // Se deshabilita si está cargando, si el formulario está deshabilitado, O si RHF reporta errores (isValid es false)
+                    disabled={loading || isFormDisabled || !isValid} 
                     className="w-full"
                 >
                     {loading ? 'Guardando...' : (isEdit ? 'Guardar Cambios' : 'Crear Producto')}
