@@ -17,7 +17,7 @@ function CheckoutForm({ onConfirm, onCancel, isSubmitting }) {
 
   return (
     <form 
-      className='flex flex-col gap-4 min-w-[300px] sm:min-w-[400px]'
+      className='flex flex-col gap-4 w-full' 
       onSubmit={handleSubmit(onConfirm)}
     >
       <h2 className='text-2xl font-bold mb-2'>Datos de Envío</h2>

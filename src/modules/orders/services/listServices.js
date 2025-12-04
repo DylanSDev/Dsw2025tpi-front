@@ -1,19 +1,25 @@
-export const listOrders = async () => {
-  const response = await fetch('/api/orders', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
+import { instance } from '../../shared/api/axiosInstance';
 
-  if (response.ok) {
-    const data = await response.json();
+export const listOrders = async (status = null, pageNumber = 1, pageSize = 10) =>
+{
+  try {
+    const filter =
+    {
+      pageNumber,
+      pageSize,
+    };
 
-    return { data, error: null };
-  } else {
-    const error = await response.json();
+    if (status && status !== 'ALL')
+    {
+      filter.status = status;
+    }
 
-    return { data: null, error };
+    const response = await instance.get('/api/orders', { params: filter });
+
+    return { data: response.data, error: null };
+  }
+  catch (error)
+  {
+    return { data: null, error: error.response?.data || error.message };
   }
 };
