@@ -33,8 +33,16 @@ function Modal({ isOpen, onClose, children }) {
   return (
     <div 
       className="
-        fixed inset-0 z-50 flex items-center justify-center 
-        bg-black bg-opacity-50 transition-opacity
+        fixed /* Mantiene el modal en su posición incluso al hacer scroll */
+        top-0
+        left-0
+        w-full
+        h-full
+        bg-black/50 /* 👈 La clave: Fondo negro con 70% de opacidad. Ajusta la opacidad (ej: /50, /60, etc.) */
+        flex
+        justify-center
+        items-center
+        z-50
       " 
       onClick={onClose}
     >

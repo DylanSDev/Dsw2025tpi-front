@@ -53,7 +53,7 @@ function CartItem({ item }) {
           -
         </Button>
         {/* Input de Cantidad */}
-        <Input 
+        <input 
           type='number' 
           value={item.quantity} 
           onChange={(e) => handleQuantityChange(e.target.value)}

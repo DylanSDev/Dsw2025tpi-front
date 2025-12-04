@@ -21,19 +21,20 @@ function ListProductsPage() {
   const [ products, setProducts ] = useState([]);
   const [loading, setLoading] = useState(false);
 
- const fetchProducts = async () => {
-  try {
-    setLoading(true);
-    const { data, error } = await getProducts(searchTerm, status, pageNumber, pageSize);
-    if (error) throw error;
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await getProducts(searchTerm, status, pageNumber, pageSize);
+      if (error) throw error;
 
-    setProducts(data?.productsItems ?? []);
-    setTotal(data?.total ?? 0);
-  } catch (error) {
-    console.error(error);
-  }finally {
-    setLoading(false);
-  }};
+      setProducts(data.productsItems ?? []);
+      setTotal(data.total ?? 0);
+    } catch (error) {
+      console.error(error);
+    }finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -45,6 +46,17 @@ function ListProductsPage() {
     await fetchProducts();
   };
 
+  const navigateToCreateProduct = () => {
+    navigate('/admin/products/create');
+  };
+
+  const handleViewProduct = (productId) => {
+    // Navega a la ruta de edición/detalle. Asume que 'product.id' existe en el objeto producto.
+    // Necesitarás implementar la página EditProductPage y configurar la ruta en App.jsx:
+    // <Route path="products/:id" element={<EditProductPage />} /> 
+    navigate(`/admin/products/${productId}`);
+  };
+
   return (
     <div>
       <Card>
@@ -52,15 +64,18 @@ function ListProductsPage() {
           className='flex justify-between items-center mb-3'
         >
           <h1 className='text-3xl'>Productos</h1>
+          {/* Botón Móvil "Crear Producto" (Icono) - Agregado onClick */}
           <Button
             className='h-11 w-11 rounded-2xl sm:hidden'
+            onClick={navigateToCreateProduct}
           >
             <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 11C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H5Z" fill="#000000"></path> <path d="M9 5C9 4.44772 9.44772 4 10 4C10.5523 4 11 4.44772 11 5V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V5Z" fill="#000000"></path> </g></svg>
           </Button>
 
+          {/* Botón Escritorio "Crear Producto" */}
           <Button
             className='hidden sm:block'
-            onClick={() => navigate('/admin/products/create')}
+            onClick={navigateToCreateProduct}
           >
             Crear Producto
           </Button>
@@ -88,9 +103,23 @@ function ListProductsPage() {
           loading
             ? <span>Buscando datos...</span>
             : products.map(product => (
-              <Card key={product.sku}>
-                <h1>{product.sku} - {product.name}</h1>
-                <p className='text-base'>Stock: {product.stockQuantity} - ${product.currentUnitPrice} - {product.isActive ? 'Activado' : 'Desactivado'}</p>
+              <Card 
+                key={product.sku}
+                // Añadido para alinear el botón 'Ver' a la derecha
+                className='flex justify-between items-center' 
+              >
+                <div>
+                  <h1>{product.sku} - {product.name}</h1>
+                  <p className='text-base'>Stock: {product.stockQuantity} - {product.isActive ? 'Activado' : 'Desactivado'}</p>
+                </div>
+                
+                {/* Botón "Ver" - Implementado para navegar al detalle */}
+                <Button 
+                    className='w-14 sm:w-20'
+                    onClick={() => handleViewProduct(product.id)}
+                >
+                    Modificar
+                </Button>
               </Card>
             ))
         }

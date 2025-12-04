@@ -101,7 +101,7 @@ function CartPage() {
         <div className='lg:col-span-2 flex flex-col gap-4'>
           {cart.length === 0 ? (
             <Card>
-              <p className='text-center'>Tu carrito está vacío. 
+              <p className='text-center'>Tu carrito está vacío. <br/><br/>
                 <Button variant='secondary' onClick={() => navigate('/')}>Ir a Productos</Button>
               </p>
             </Card>
